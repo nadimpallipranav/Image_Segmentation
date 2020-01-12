@@ -6,7 +6,10 @@ from torch.backends import cudnn
 import random
 
 def main(config):
+    ## this ensures our model and input data does not change as the model trains
     cudnn.benchmark = True
+    
+    ## verifying tht model_type is one of the following
     if config.model_type not in ['U_Net','R2U_Net','AttU_Net','R2AttU_Net']:
         print('ERROR!! model_type should be selected in U_Net/R2U_Net/AttU_Net/R2AttU_Net')
         print('Your input for model_type was %s'%config.model_type)
@@ -21,19 +24,23 @@ def main(config):
     if not os.path.exists(config.result_path):
         os.makedirs(config.result_path)
     
+                                                        ## I DON"T UNDERSTAND THIS
     lr = random.random()*0.0005 + 0.0000005
     augmentation_prob= random.random()*0.7
     epoch = random.choice([100,150,200,250])
     decay_ratio = random.random()*0.8
     decay_epoch = int(epoch*decay_ratio)
 
+                                                        ## OR THIS
     config.augmentation_prob = augmentation_prob
     config.num_epochs = epoch
     config.lr = lr
     config.num_epochs_decay = decay_epoch
 
     print(config)
-        
+    
+    ## Load data. First "python3 data_loader.py" must finish executing
+    
     train_loader = get_loader(image_path=config.train_path,
                             image_size=config.image_size,
                             batch_size=config.batch_size,
@@ -62,7 +69,7 @@ def main(config):
     elif config.mode == 'test':
         solver.test()
 
-
+## They utilise a parser to define the model -- WE DON'T USE THIS, BE CAREFUL
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
