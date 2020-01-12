@@ -6,17 +6,18 @@ import torch
 from torch.utils import data
 from torchvision import transforms as T
 from torchvision.transforms import functional as F
-from PIL import Image
+# from PIL import Image
+import SimpleITK as sitk
 
 class ImageFolder(data.Dataset):
-	def __init__(self, root,image_size=224,mode='train',augmentation_prob=0.4):
+	def __init__(self, root,image_size=132,mode='train',augmentation_prob=0.4):
 		"""Initializes image paths and preprocessing module."""
 		self.root = root
 		
 		# GT : Ground Truth
-		self.GT_paths = root[:-1]+'_GT/'
-		self.image_paths = list(map(lambda x: os.path.join(root, x), os.listdir(root)))
-		self.image_size = image_size
+		self.GT_paths = root[:-1]+'_GT/'  							## edit
+		self.image_paths = list(map(lambda x: os.path.join(root, x), os.listdir(root)))  	## edit
+		self.image_size = image_size  	## image_size = 132
 		self.mode = mode
 		self.RotationDegree = [0,90,180,270]
 		self.augmentation_prob = augmentation_prob
@@ -24,21 +25,23 @@ class ImageFolder(data.Dataset):
 
 	def __getitem__(self, index):
 		"""Reads an image from a file and preprocesses it and returns."""
-		image_path = self.image_paths[index]
-		filename = image_path.split('_')[-1][:-len(".jpg")]
+		image_path = self.image_paths[index]  
+		filename = image_path.split('_')[-1][:-len(".jpg")]	## This code takes .jpg input, we need to take .dcm or .nii.gz   
 		GT_path = self.GT_paths + 'ISIC_' + filename + '_segmentation.png'
 
-		image = Image.open(image_path)
+		image = Image.open(image_path)				## image should be input using sitk
 		GT = Image.open(GT_path)
 
-		aspect_ratio = image.size[1]/image.size[0]
-
+		aspect_ratio = image.size[1]/image.size[0]		## assumes image dims are [x, y, z]
+									## when image -> np array, dims are [x, y, z] -> [z, y, x]
 		Transform = []
 
+		## Resize
 		ResizeRange = random.randint(300,320)
 		Transform.append(T.Resize((int(ResizeRange*aspect_ratio),ResizeRange)))
 		p_transform = random.random()
 
+		## Data aug - Rotation, Crop, Shift
 		if (self.mode == 'train') and p_transform <= self.augmentation_prob:
 			RotationDegree = random.randint(0,3)
 			RotationDegree = self.RotationDegree[RotationDegree]
