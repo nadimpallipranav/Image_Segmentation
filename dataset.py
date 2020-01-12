@@ -15,20 +15,21 @@ def rm_mkdir(dir_path):
 
 def main(config):
 
+    ## make directories if they don't exist
     rm_mkdir(config.train_path)
-    rm_mkdir(config.train_GT_path)
+    rm_mkdir(config.train_GT_path)          ## edit -- rename to fit PS
     rm_mkdir(config.valid_path)
-    rm_mkdir(config.valid_GT_path)
+    rm_mkdir(config.valid_GT_path)          ## edit -- rename to fit PS
     rm_mkdir(config.test_path)
-    rm_mkdir(config.test_GT_path)
+    rm_mkdir(config.test_GT_path)           ## edit -- rename to fit PS
 
     filenames = os.listdir(config.origin_data_path)
     data_list = []
     GT_list = []
 
-    for filename in filenames:
-        ext = os.path.splitext(filename)[-1]
-        if ext =='.jpg':
+    for filename in filenames:                                      ### EDIT
+        ext = os.path.splitext(filename)[-1]                        ### These lines must be chnaged to indicate
+        if ext =='.jpg':                                            ### directories reevant to PS
             filename = filename.split('_')[-1][:-len('.jpg')]
             data_list.append('ISIC_'+filename+'.jpg')
             GT_list.append('ISIC_'+filename+'_segmentation.png')
@@ -45,6 +46,7 @@ def main(config):
     Arange = list(range(num_total))
     random.shuffle(Arange)
 
+    ## copy files from original datapath to train datapath
     for i in range(num_train):
         idx = Arange.pop()
         
@@ -58,7 +60,7 @@ def main(config):
 
         printProgressBar(i + 1, num_train, prefix = 'Producing train set:', suffix = 'Complete', length = 50)
         
-
+    ## Similiarly val data
     for i in range(num_valid):
         idx = Arange.pop()
 
@@ -71,7 +73,8 @@ def main(config):
         copyfile(src, dst)
 
         printProgressBar(i + 1, num_valid, prefix = 'Producing valid set:', suffix = 'Complete', length = 50)
-
+    
+    ## Lastly test data
     for i in range(num_test):
         idx = Arange.pop()
 
@@ -86,6 +89,8 @@ def main(config):
 
         printProgressBar(i + 1, num_test, prefix = 'Producing test set:', suffix = 'Complete', length = 50)
 
+        
+## When we run "python3 dataset.py", object __name__ is set to "__main__" and the following code runs
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
